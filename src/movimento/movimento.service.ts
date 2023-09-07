@@ -3,7 +3,7 @@ import { Movimentar } from './movimento.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Funcionario } from '../funcionarios/funcionarios.entity';
-import { Cliente } from 'src/clientes/clientes.entity';
+import { Cliente } from '../clientes/clientes.entity';
 
 @Injectable()
 export class MovimentoService {
@@ -25,34 +25,54 @@ export class MovimentoService {
   }
 
   async create(movimentoData: Movimentar): Promise<Movimentar> {
-    const { funcionario } = movimentoData;
+    const funcionarioData = { ...movimentoData };
+    const clienteData = { ...movimentoData };
+    async function processFuncionarioData(
+      movimentoData: any,
+      funcionarioRepository: Repository<Funcionario>
+    ): Promise<void> {
+      const { funcionario } = movimentoData;
+      if (!funcionario || typeof funcionario !== 'object' || !funcionario.id) {
+        return;
+      }
 
-    if (!funcionario || typeof funcionario !== 'object' || !funcionario.funcId) {
-      throw new BadRequestException('Funcionário não fornecido ou indefinido.');
+      const id = Number(funcionario.id);
+      const loadedFuncionario = await funcionarioRepository.findOne({ where: { id } });
+
+      if (!loadedFuncionario) {
+        return;
+      }
+
+      movimentoData.funcionario = loadedFuncionario;
     }
 
-    const funcId = Number(funcionario.funcId); // Converter para número
+    async function processClienteData(movimentoData: any, clienteRepository: Repository<Cliente>): Promise<void> {
+      const { cliente } = movimentoData;
 
-    const loadedFuncionario = await this.funcionarioRepository.findOne({ where: { funcId } });
+      if (!cliente || typeof cliente !== 'object' || !cliente.id) {
+        return;
+      }
 
-    if (!loadedFuncionario) {
-      throw new BadRequestException('Funcionário não encontrado.');
+      const clienteId = Number(cliente.id);
+
+      const loadedCliente = await clienteRepository
+        .createQueryBuilder('cliente')
+        .where('cliente.id = :id', { id: clienteId })
+        .getOne();
+      if (!loadedCliente) {
+        return;
+      }
+      if (typeof loadedCliente.mensalidade !== 'undefined') {
+        movimentoData.cliente = loadedCliente;
+      } else {
+        console.log('esta faltando a mensalidade do cliente');
+        return;
+      }
     }
 
-    movimentoData.funcionario = loadedFuncionario;
+    await processFuncionarioData(funcionarioData, this.funcionarioRepository);
+    await processClienteData(clienteData, this.clienteRepository);
 
-    const { cliente } = movimentoData;
-    if (!cliente || typeof cliente !== 'object' || !cliente.cliId) {
-      throw new BadRequestException('Funcionário não fornecido ou indefinido.');
-    }
-
-    const cliId = Number(cliente.cliId);
-
-    const loadedCliente = await this.clienteRepository.findOne({ where: { cliId } });
-
-    if (!loadedCliente) {
-      throw new BadRequestException('Funcionário não encontrado.');
-    }
     const validationResult = await this.validateMovimentar(movimentoData);
     if (validationResult === true) {
       const movimento = this.movimentoRepository.create(movimentoData);
@@ -72,12 +92,9 @@ export class MovimentoService {
   }
 
   async validateMovimentar(movimentoData: Movimentar): Promise<boolean> {
-    console.log(movimentoData.cliente);
-    console.log(movimentoData.cliente.mensalidade);
-    if (movimentoData.aluguelVeiculo && movimentoData.cliente && !movimentoData.cliente.mensalidade) {
+    if (movimentoData.cliente && !movimentoData.cliente.mensalidade) {
       throw new BadRequestException('Cliente com mensalidade inativa não pode retirar um veículo.');
     }
-
     if (movimentoData.funcionario && movimentoData.funcionario.faltas) {
       throw new BadRequestException('Funcionário com faltas ativas não pode retirar veículo.');
     }
@@ -86,8 +103,7 @@ export class MovimentoService {
     if (movimentoData.devolucaoVeiculo <= dataAtual) {
       movimentoData.multa = true;
     }
-
-    if (movimentoData.multa && movimentoData.veiculo && movimentoData.veiculo.ano >= 2000) {
+    if (movimentoData.multa && !movimentoData.veiculo && movimentoData.veiculo.ano >= 2000) {
       throw new BadRequestException('Veículo com multa só pode ser retirado se for de ano igual ou inferior a 2000.');
     }
 

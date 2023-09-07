@@ -5,8 +5,6 @@ import { ClientesModule } from './clientes/clientes.module';
 import { VeiculosModule } from './veiculos/veiculos.module';
 import { FuncionariosModule } from './funcionarios/funcionarios.module';
 import { MovimentoModule } from './movimento/movimento.module';
-// import { OficinaService } from './oficina/oficina.service';
-// import { OficinaController } from './oficina/oficina.controller';
 import { OficinaModule } from './oficina/oficina.module';
 
 @Module({
@@ -28,7 +26,5 @@ import { OficinaModule } from './oficina/oficina.module';
     MovimentoModule,
     OficinaModule,
   ],
-  // providers: [OficinaService],
-  // controllers: [OficinaController],
 })
 export class AppModule {}

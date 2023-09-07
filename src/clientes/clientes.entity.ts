@@ -3,7 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 @Entity({ name: 'Clientes' })
 export class Cliente {
   @PrimaryGeneratedColumn({ name: 'id' })
-  cliId: number;
+  id: number;
 
   @Column({ name: 'cpf', nullable: false })
   cpf: string;
@@ -19,5 +19,6 @@ export class Cliente {
 
   @OneToMany(() => Movimentar, (movimentar) => movimentar.cliente)
   movimentacoes: Movimentar[];
+  cliente: any;
   multa: Cliente;
 }

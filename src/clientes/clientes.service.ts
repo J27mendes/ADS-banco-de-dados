@@ -14,8 +14,8 @@ export class ClienteService {
     return this.clienteRepository.find();
   }
 
-  async findOne(cliId: number): Promise<Cliente> {
-    return this.clienteRepository.findOne({ where: { cliId } });
+  async findOne(id: number): Promise<Cliente> {
+    return this.clienteRepository.findOne({ where: { id } });
   }
 
   async create(clienteData: Cliente): Promise<Cliente> {
@@ -23,12 +23,12 @@ export class ClienteService {
     return this.clienteRepository.save(cliente);
   }
 
-  async update(cliId: number, clienteData: Cliente): Promise<Cliente> {
-    await this.clienteRepository.update(cliId, clienteData);
-    return this.clienteRepository.findOne({ where: { cliId } });
+  async update(id: number, clienteData: Cliente): Promise<Cliente> {
+    await this.clienteRepository.update(id, clienteData);
+    return this.clienteRepository.findOne({ where: { id } });
   }
 
-  async remove(cliId: number): Promise<void> {
-    await this.clienteRepository.delete(cliId);
+  async remove(id: number): Promise<void> {
+    await this.clienteRepository.delete(id);
   }
 }

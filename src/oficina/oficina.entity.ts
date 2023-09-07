@@ -7,7 +7,7 @@ export class Oficina {
   id: string;
 
   @ManyToOne(() => Veiculo, (veiculo) => veiculo.oficinas)
-  @JoinColumn({ name: 'veiculoId', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'veiculoId', referencedColumnName: 'veiId' })
   veiculo: Veiculo;
 
   @Column({ name: 'lavagem', nullable: false })

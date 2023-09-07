@@ -14,8 +14,8 @@ export class FuncionariosService {
     return this.funcionarioRepository.find();
   }
 
-  async findOne(funcId: number): Promise<Funcionario> {
-    return this.funcionarioRepository.findOne({ where: { funcId } });
+  async findOne(id: number): Promise<Funcionario> {
+    return this.funcionarioRepository.findOne({ where: { id } });
   }
 
   async create(funcionarioData: Funcionario): Promise<Funcionario> {
@@ -23,9 +23,9 @@ export class FuncionariosService {
     return this.funcionarioRepository.save(funcionario);
   }
 
-  async update(funcId: number, funcionarioData: Funcionario): Promise<Funcionario> {
-    await this.funcionarioRepository.update(funcId, funcionarioData);
-    return this.funcionarioRepository.findOne({ where: { funcId } });
+  async update(id: number, funcionarioData: Funcionario): Promise<Funcionario> {
+    await this.funcionarioRepository.update(id, funcionarioData);
+    return this.funcionarioRepository.findOne({ where: { id } });
   }
 
   async remove(id: number): Promise<void> {
