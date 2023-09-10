@@ -25,53 +25,11 @@ export class MovimentoService {
   }
 
   async create(movimentoData: Movimentar): Promise<Movimentar> {
-    const funcionarioData = { ...movimentoData };
-    const clienteData = { ...movimentoData };
-    async function processFuncionarioData(
-      movimentoData: any,
-      funcionarioRepository: Repository<Funcionario>
-    ): Promise<void> {
-      const { funcionario } = movimentoData;
-      if (!funcionario || typeof funcionario !== 'object' || !funcionario.id) {
-        return;
-      }
+    const loadedCliente = await this.processClienteData(movimentoData);
+    const loadedFuncionario = await this.processFuncionarioData(movimentoData);
 
-      const id = Number(funcionario.id);
-      const loadedFuncionario = await funcionarioRepository.findOne({ where: { id } });
-
-      if (!loadedFuncionario) {
-        return;
-      }
-
-      movimentoData.funcionario = loadedFuncionario;
-    }
-
-    async function processClienteData(movimentoData: any, clienteRepository: Repository<Cliente>): Promise<void> {
-      const { cliente } = movimentoData;
-
-      if (!cliente || typeof cliente !== 'object' || !cliente.id) {
-        return;
-      }
-
-      const clienteId = Number(cliente.id);
-
-      const loadedCliente = await clienteRepository
-        .createQueryBuilder('cliente')
-        .where('cliente.id = :id', { id: clienteId })
-        .getOne();
-      if (!loadedCliente) {
-        return;
-      }
-      if (typeof loadedCliente.mensalidade !== 'undefined') {
-        movimentoData.cliente = loadedCliente;
-      } else {
-        console.log('esta faltando a mensalidade do cliente');
-        return;
-      }
-    }
-
-    await processFuncionarioData(funcionarioData, this.funcionarioRepository);
-    await processClienteData(clienteData, this.clienteRepository);
+    movimentoData.funcionario = loadedFuncionario;
+    movimentoData.cliente = loadedCliente;
 
     const validationResult = await this.validateMovimentar(movimentoData);
     if (validationResult === true) {
@@ -92,10 +50,17 @@ export class MovimentoService {
   }
 
   async validateMovimentar(movimentoData: Movimentar): Promise<boolean> {
-    if (movimentoData.cliente && !movimentoData.cliente.mensalidade) {
-      throw new BadRequestException('Cliente com mensalidade inativa não pode retirar um veículo.');
+    if (movimentoData.cliente === undefined && movimentoData.funcionario === undefined) {
+      throw new BadRequestException('Cliente ou Funcionario não informados');
     }
-    if (movimentoData.funcionario && movimentoData.funcionario.faltas) {
+
+    if (movimentoData.cliente && movimentoData.cliente.mensalidade === false) {
+      throw new BadRequestException('Cliente com mensalidade inativa não pode retirar um veículo.');
+    } else if (movimentoData.cliente === null) {
+      return;
+    }
+
+    if (movimentoData.funcionario && movimentoData.funcionario.faltas === true) {
       throw new BadRequestException('Funcionário com faltas ativas não pode retirar veículo.');
     }
 
@@ -107,6 +72,43 @@ export class MovimentoService {
       throw new BadRequestException('Veículo com multa só pode ser retirado se for de ano igual ou inferior a 2000.');
     }
 
-    return true;
+    return true; // Validação movimentarData
   }
+
+  async processFuncionarioData(movimentoData: any): Promise<Funcionario> {
+    if (!movimentoData || typeof movimentoData.funcionario !== 'object' || !movimentoData.funcionario.id) {
+      return;
+    }
+
+    const id = Number(movimentoData.funcionario.id);
+    const loadedFuncionario = await this.funcionarioRepository.findOne({ where: { id } });
+
+    if (!loadedFuncionario) {
+      return;
+    }
+    return loadedFuncionario;
+  } //processamento do funcionario
+
+  async processClienteData(movimentoData: any): Promise<Cliente> {
+    if (!movimentoData.cliente || typeof movimentoData.cliente !== 'object' || !movimentoData.cliente.id) {
+      return;
+    }
+
+    const clienteId = Number(movimentoData.cliente.id);
+
+    const loadedCliente = await this.clienteRepository
+      .createQueryBuilder('cliente')
+      .where('cliente.id = :id', { id: clienteId })
+      .getOne();
+    if (!loadedCliente) {
+      return;
+    }
+    if (typeof loadedCliente.mensalidade !== 'undefined') {
+      movimentoData.cliente = loadedCliente;
+    } else {
+      console.log('esta faltando a mensalidade do cliente');
+      return;
+    }
+    return loadedCliente;
+  } // Processamento de cliente
 }
