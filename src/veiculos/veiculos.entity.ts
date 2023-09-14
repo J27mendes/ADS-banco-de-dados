@@ -3,8 +3,8 @@ import { Oficina } from 'src/oficina/oficina.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 @Entity({ name: 'Veiculos' })
 export class Veiculo {
-  @PrimaryGeneratedColumn({ name: 'veiId' })
-  veiId: number;
+  @PrimaryGeneratedColumn({ name: 'id' })
+  id: number;
 
   @Column({ name: 'placa', nullable: false })
   placa: string;
@@ -18,17 +18,12 @@ export class Veiculo {
   @Column({ name: 'cor', nullable: false })
   cor: string;
 
+  @Column({ name: 'status', default: false })
+  status: boolean;
+
   @OneToMany(() => Movimentar, (movimentar) => movimentar.veiculo)
   movimentacoes: Movimentar[];
 
   @OneToMany(() => Oficina, (oficina) => oficina.veiculo)
   oficinas: Oficina[];
-
-  status: boolean;
-
-  updateStatus() {
-    const LavagemOuManutencao = this.oficinas.some((oficina) => oficina.lavagem || oficina.manutencao);
-
-    this.status = LavagemOuManutencao;
-  }
 }

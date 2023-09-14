@@ -11,9 +11,9 @@ export class VeiculosController {
     return this.veiculosService.findAll();
   }
 
-  @Get(':veiId')
-  async findOne(@Param('veiId') veiId: number): Promise<Veiculo> {
-    return this.veiculosService.findOne(veiId);
+  @Get(':id')
+  async findOne(@Param('id') id: number): Promise<Veiculo> {
+    return this.veiculosService.findOne(id);
   }
 
   @Post()
@@ -21,13 +21,13 @@ export class VeiculosController {
     return this.veiculosService.create(veiculosData);
   }
 
-  @Put(':veiId')
-  async update(@Param('veiId') veiId: number, @Body() veiculosData: Veiculo): Promise<Veiculo> {
-    return this.veiculosService.update(veiId, veiculosData);
+  @Put(':id')
+  async update(@Param('id') id: number, @Body() veiculosData: Veiculo): Promise<Veiculo> {
+    return this.veiculosService.update(id, veiculosData);
   }
 
-  @Delete(':veiId')
-  async remove(@Param('veiId') veiId: number): Promise<void> {
-    return this.veiculosService.remove(veiId);
+  @Delete(':id')
+  async remove(@Param('id') id: number): Promise<void> {
+    return this.veiculosService.remove(id);
   }
 }

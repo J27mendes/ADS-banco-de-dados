@@ -8,5 +8,6 @@ import { VeiculosService } from './veiculos.service';
   imports: [TypeOrmModule.forFeature([Veiculo])],
   controllers: [VeiculosController],
   providers: [VeiculosService],
+  exports: [VeiculosService, TypeOrmModule],
 })
 export class VeiculosModule {}

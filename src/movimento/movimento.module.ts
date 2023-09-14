@@ -5,9 +5,10 @@ import { MovimentoService } from './movimento.service';
 import { Movimentar } from './movimento.entity';
 import { FuncionariosModule } from '../funcionarios/funcionarios.module';
 import { ClientesModule } from '../clientes/clientes.module';
+import { VeiculosModule } from 'src/veiculos/veiculos.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Movimentar]), FuncionariosModule, ClientesModule],
+  imports: [TypeOrmModule.forFeature([Movimentar]), FuncionariosModule, ClientesModule, VeiculosModule],
   controllers: [MovimentoController],
   providers: [MovimentoService],
 })

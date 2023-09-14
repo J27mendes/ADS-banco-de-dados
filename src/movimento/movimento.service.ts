@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Funcionario } from '../funcionarios/funcionarios.entity';
 import { Cliente } from '../clientes/clientes.entity';
+import { Veiculo } from 'src/veiculos/veiculos.entity';
 
 @Injectable()
 export class MovimentoService {
@@ -13,7 +14,9 @@ export class MovimentoService {
     @InjectRepository(Funcionario)
     private readonly funcionarioRepository: Repository<Funcionario>,
     @InjectRepository(Cliente)
-    private readonly clienteRepository: Repository<Cliente>
+    private readonly clienteRepository: Repository<Cliente>,
+    @InjectRepository(Veiculo)
+    private readonly veiculoRepositoy: Repository<Veiculo>
   ) {}
 
   async findAll(): Promise<Movimentar[]> {
@@ -27,9 +30,11 @@ export class MovimentoService {
   async create(movimentoData: Movimentar): Promise<Movimentar> {
     const loadedCliente = await this.processClienteData(movimentoData);
     const loadedFuncionario = await this.processFuncionarioData(movimentoData);
+    const loadedVeiculo = await this.processVeiculoData(movimentoData);
 
     movimentoData.funcionario = loadedFuncionario;
     movimentoData.cliente = loadedCliente;
+    movimentoData.veiculo = loadedVeiculo;
 
     const validationResult = await this.validateMovimentar(movimentoData);
     if (validationResult === true) {
@@ -68,7 +73,12 @@ export class MovimentoService {
     if (movimentoData.devolucaoVeiculo <= dataAtual) {
       movimentoData.multa = true;
     }
-    if (movimentoData.multa && !movimentoData.veiculo && movimentoData.veiculo.ano >= 2000) {
+
+    if (movimentoData.veiculo.status === true) {
+      throw new BadRequestException('veiculo na oficina não pode ser retirado');
+    }
+
+    if (movimentoData.multa && movimentoData.veiculo.ano >= 2000) {
       throw new BadRequestException('Veículo com multa só pode ser retirado se for de ano igual ou inferior a 2000.');
     }
 
@@ -111,4 +121,22 @@ export class MovimentoService {
     }
     return loadedCliente;
   } // Processamento de cliente
+
+  async processVeiculoData(movimentoData: any): Promise<Veiculo> {
+    if (!movimentoData.veiculo || typeof movimentoData.veiculo !== 'object' || movimentoData.veiculo.ano) {
+      return;
+    }
+
+    const veiculoId = Number(movimentoData.veiculo.id);
+
+    const loadedVeiculo = await this.veiculoRepositoy
+      .createQueryBuilder('veiculo')
+      .where('veiculo.id = :id', { id: veiculoId })
+      .getOne();
+
+    if (!loadedVeiculo) {
+      return;
+    }
+    return loadedVeiculo;
+  }
 }

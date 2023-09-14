@@ -10,7 +10,7 @@ export class Movimentar {
 
   // Chave estrangeira para Veiculo
   @ManyToOne(() => Veiculo, (veiculo) => veiculo.movimentacoes)
-  @JoinColumn({ name: 'veiculoId', referencedColumnName: 'veiId' })
+  @JoinColumn({ name: 'veiculoId', referencedColumnName: 'id' })
   veiculo: Veiculo;
 
   // Chave estrangeira para Funcionario

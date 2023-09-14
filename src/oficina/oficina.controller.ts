@@ -1,10 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { Oficina } from './oficina.entity';
 import { OficinaService } from './oficina.service';
+import { VeiculosService } from 'src/veiculos/veiculos.service';
 
 @Controller('Oficina')
 export class OficinaController {
-  constructor(private readonly oficinaService: OficinaService) {}
+  constructor(private readonly oficinaService: OficinaService, private readonly veiculosService: VeiculosService) {}
 
   @Get()
   async findAll(): Promise<Oficina[]> {
@@ -18,7 +19,11 @@ export class OficinaController {
 
   @Post()
   async create(@Body() oficinaData: Oficina): Promise<Oficina> {
-    return this.oficinaService.create(oficinaData);
+    const oficina = this.oficinaService.create(oficinaData);
+
+    await this.veiculosService.updateVeiculoStatus((await oficina).veiculo.id);
+
+    return oficina;
   }
 
   @Put(':id')
