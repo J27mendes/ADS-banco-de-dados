@@ -21,15 +21,12 @@ export class MovimentoController {
     try {
       const validationResult = this.movimentoService.validateMovimentar(movimentoData);
       if ((await validationResult) === true) {
-        // Todas as validações passaram, então podemos criar e salvar a movimentação.
         const movimento = await this.movimentoService.create(movimentoData);
         return movimento;
       } else {
-        // Alguma validação falhou, lançar uma exceção BadRequestException com a mensagem de erro.
         throw new BadRequestException(validationResult);
       }
     } catch (error) {
-      // Lide com o erro aqui, por exemplo, retorne uma resposta HTTP com o erro.
       throw new BadRequestException(`Erro ao criar movimentação: ${error.message}`);
     }
   }
